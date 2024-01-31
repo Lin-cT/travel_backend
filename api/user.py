@@ -31,6 +31,7 @@ class UserAPI:
             # look for password and dob
             password = body.get('password')
             dob = body.get('dob')
+            email = body.get('email')
 
             ''' #1: Key code block, setup USER OBJECT '''
             uo = User(name=name, 
