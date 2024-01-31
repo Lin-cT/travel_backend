@@ -76,6 +76,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     _name = db.Column(db.String(255), unique=False, nullable=False)
     _uid = db.Column(db.String(255), unique=True, nullable=False)
+    _email = db.Column(db.String(255), unique=True, nullable=False)  # Add the email field
     _password = db.Column(db.String(255), unique=False, nullable=False)
     _dob = db.Column(db.Date)
     
@@ -83,11 +84,20 @@ class User(db.Model):
     posts = db.relationship("Post", cascade='all, delete', backref='users', lazy=True)
 
     # constructor of a User object, initializes the instance variables within object (self)
-    def __init__(self, name, uid, password="123qwerty", dob=date.today()):
-        self._name = name    # variables with self prefix become part of the object, 
+    def __init__(self, name, uid, email, password="123qwerty", dob=date.today()):
+        self._name = name
         self._uid = uid
+        self._email = email  # Initialize the email field
         self.set_password(password)
         self._dob = dob
+    
+    @property
+    def email(self):
+        return self._email
+    
+    @email.setter
+    def email(self, email):
+        self._email = email
 
     # a name getter method, extracts name from object
     @property
