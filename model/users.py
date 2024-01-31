@@ -10,60 +10,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 
 ''' Tutorial: https://www.sqlalchemy.org/library.html#tutorials, try to get into Python shell and follow along '''
-
-# Define the Post class to manage actions in 'posts' table,  with a relationship to 'users' table
-class Post(db.Model):
-    __tablename__ = 'posts'
-
-    # Define the Notes schema
-    id = db.Column(db.Integer, primary_key=True)
-    note = db.Column(db.Text, unique=False, nullable=False)
-    image = db.Column(db.String, unique=False)
-    # Define a relationship in Notes Schema to userID who originates the note, many-to-one (many notes to one user)
-    userID = db.Column(db.Integer, db.ForeignKey('users.id'))
-
-    # Constructor of a Notes object, initializes of instance variables within object
-    def __init__(self, id, note, image):
-        self.userID = id
-        self.note = note
-        self.image = image
-
-    # Returns a string representation of the Notes object, similar to java toString()
-    # returns string
-    def __repr__(self):
-        return "Notes(" + str(self.id) + "," + self.note + "," + str(self.userID) + ")"
-
-    # CRUD create, adds a new record to the Notes table
-    # returns the object added or None in case of an error
-    def create(self):
-        try:
-            # creates a Notes object from Notes(db.Model) class, passes initializers
-            db.session.add(self)  # add prepares to persist person object to Notes table
-            db.session.commit()  # SqlAlchemy "unit of work pattern" requires a manual commit
-            return self
-        except IntegrityError:
-            db.session.remove()
-            return None
-
-    # CRUD read, returns dictionary representation of Notes object
-    # returns dictionary
-    def read(self):
-        # encode image
-        path = app.config['UPLOAD_FOLDER']
-        file = os.path.join(path, self.image)
-        file_text = open(file, 'rb')
-        file_read = file_text.read()
-        file_encode = base64.encodebytes(file_read)
-        
-        return {
-            "id": self.id,
-            "userID": self.userID,
-            "note": self.note,
-            "image": self.image,
-            "base64": str(file_encode)
-        }
-
-
 # Define the User class to manage actions in the 'users' table
 # -- Object Relational Mapping (ORM) is the key concept of SQLAlchemy
 # -- a.) db.Model is like an inner layer of the onion in ORM
@@ -90,14 +36,6 @@ class User(db.Model):
         self._email = email  # Initialize the email field
         self.set_password(password)
         self._dob = dob
-    
-    @property
-    def email(self):
-        return self._email
-    
-    @email.setter
-    def email(self, email):
-        self._email = email
 
     # a name getter method, extracts name from object
     @property
@@ -122,6 +60,14 @@ class User(db.Model):
     # check if uid parameter matches user id in object, return boolean
     def is_uid(self, uid):
         return self._uid == uid
+    
+    @property
+    def email(self):
+        return self._email
+    
+    @email.setter
+    def email(self, email):
+        self._email = email
     
     @property
     def password(self):
@@ -178,6 +124,7 @@ class User(db.Model):
             "id": self.id,
             "name": self.name,
             "uid": self.uid,
+            "email": self.email,
             "dob": self.dob,
             "age": self.age,
             "posts": [post.read() for post in self.posts]
@@ -185,12 +132,14 @@ class User(db.Model):
 
     # CRUD update: updates user name, password, phone
     # returns self
-    def update(self, name="", uid="", password=""):
+    def update(self, name="", uid="", email="", password=""):
         """only updates values with length"""
         if len(name) > 0:
             self.name = name
         if len(uid) > 0:
             self.uid = uid
+        if len(email) > 0:
+            self.email = email
         if len(password) > 0:
             self.set_password(password)
         db.session.commit()
@@ -203,33 +152,29 @@ class User(db.Model):
         db.session.commit()
         return None
 
-
 """Database Creation and Testing """
 
 
 # Builds working data for testing
 def initUsers():
     with app.app_context():
-        """Create database and tables"""
-        db.create_all()
-        """Tester data for table"""
-        u1 = User(name='Thomas Edison', uid='toby', password='123toby', dob=date(1847, 2, 11))
-        u2 = User(name='Nicholas Tesla', uid='niko', password='123niko', dob=date(1856, 7, 10))
-        u3 = User(name='Alexander Graham Bell', uid='lex')
-        u4 = User(name='Grace Hopper', uid='hop', password='123hop', dob=date(1906, 12, 9))
-        users = [u1, u2, u3, u4]
+       db.create_all()
+       u1 = User(name='Thomas Edison', uid='toby', email='tomed@gmail.com', password='123toby', dob=date(1847, 2, 11))
+       u2 = User(name='Nicholas Tesla', uid='niko', email='niko@gmail.com', password='123niko', dob=date(1856, 7, 10))
+       u3 = User(name='Alexander Graham Bell', uid='lex', email='a.bell@gmail.com')
+       u4 = User(name='Grace Hopper', uid='hop', email='gracehop@gmail.com', password='123hop', dob=date(1906, 12, 9))
+       users = [u1, u2, u3, u4]
 
-        """Builds sample user/note(s) data"""
-        for user in users:
-            try:
-                '''add a few 1 to 4 notes per user'''
-                for num in range(randrange(1, 4)):
-                    note = "#### " + user.name + " note " + str(num) + ". \n Generated by test data."
-                    user.posts.append(Post(id=user.id, note=note, image='ncs_logo.png'))
-                '''add user/post data to table'''
-                user.create()
-            except IntegrityError:
-                '''fails with bad or duplicate data'''
-                db.session.remove()
-                print(f"Records exist, duplicate email, or error: {user.uid}")
-            
+"""Builds sample user/note(s) data"""
+ #       for user in users:
+ #           try:
+'''add a few 1 to 4 notes per user'''
+ #               for num in range(randrange(1, 4)):
+  #                  note = "#### " + user.name + " note " + str(num) + ". \n Generated by test data."
+  #                  user.posts.append(Post(id=user.id, note=note, image='ncs_logo.png'))
+  #              '''add user/post data to table'''
+ #               user.create()
+ #           except IntegrityError:
+'''fails with bad or duplicate data'''
+ #               db.session.remove()
+ #               print(f"Records exist, duplicate email, or error: {user.uid}")
