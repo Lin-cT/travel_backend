@@ -63,7 +63,6 @@ class UserAPI:
             return jsonify(json_ready)  # jsonify creates Flask response object, more specific to APIs than json.dumps
     
     class _Security(Resource):
-        @token_required
         def post(self):
             try:
                 body = request.get_json()
