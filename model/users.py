@@ -148,7 +148,7 @@ class User(db.Model):
     
     @property
     def role(self):
-        return self._animal
+        return self._role
     
     # a setter function, allows name to be updated after initial object creation
     @role.setter
