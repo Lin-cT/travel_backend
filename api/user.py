@@ -59,7 +59,7 @@ class UserAPI:
             # failure returns error
             return {'message': f'Processed {name}, either a format error or User ID {uid} is duplicate'}, 400
 
-        @token_required(roles=[])
+        @token_required(roles=["Admin"])
         def get(self, current_user): # Read Method
             users = User.query.all()    # read/extract all users from database
             json_ready = [user.read() for user in users]  # prepare output in json
@@ -147,8 +147,31 @@ class UserAPI:
                         "error": str(e),
                         "data": None
                 }, 502
+    
+    class _Create(Resource):
+        def post(self):
+            body = request.get_json()
+            # Fetch data from the form
+            name = body.get('name')
+            uid = body.get('uid')
+            password = body.get('password')
+            dob = body.get('dob')
+            animal = body.get('animal')
+            role = body.get('role')
+            if animal is not None:
+                new_user = User(name=name, uid=uid, password=password, dob=dob, animal=animal, role=role)
+            else:
+                new_user = User(name=name, uid=uid, password=password, dob=dob, animal='', role=role)
+            user = new_user.create()
+            # success returns json of user
+            if user:
+                #return jsonify(user.read())
+                return user.read()
+            # failure returns error
+            return {'message': f'Processed {name}, either a format error or User ID {uid} is duplicate'}, 400
 
     # building RESTapi endpoint
     api.add_resource(_CRUD, '/')
     api.add_resource(_Security, '/authenticate')
+    api.add_resource(_Create, '/create')
     
