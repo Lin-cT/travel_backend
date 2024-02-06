@@ -4,10 +4,13 @@ from flask import request, abort
 from flask import current_app
 from model.users import User
 
-def token_required(f, roles=None):
+def token_required(roles=None):
+    def decorator(f):
         @wraps(f)
         def decorated(*args, **kwargs):
+            
             token = request.cookies.get("jwt")
+
             if not token:
                 return {
                     "message": "Authentication Token is missing!",
@@ -23,7 +26,16 @@ def token_required(f, roles=None):
                         "data": None,
                         "error": "Unauthorized"
                     }, 401
+
+                if roles and current_user.role not in roles:
+                    return {
+                        "message": "Insufficient permissions. Required roles: {}".format(roles),
+                        "data": None,
+                        "error": "Forbidden"
+                    }, 403
+
             except Exception as e:
+
                 return {
                     "message": "Something went wrong",
                     "data": None,
@@ -33,3 +45,4 @@ def token_required(f, roles=None):
             return f(current_user, *args, **kwargs)
 
         return decorated
+    return decorator
