@@ -15,7 +15,7 @@ class User(db.Model):
     _name = db.Column(db.String(255), unique=False, nullable=False)
     _uid = db.Column(db.String(255), unique=True, nullable=False)
     _password = db.Column(db.String(255), unique=False, nullable=False)
-    _role = db.Column(db.String(255))
+    _role = db.Column(db.String(255), unique=False)
     _animal = db.Column(db.String(255))
     # Defines a relationship between User record and Notes table, one-to-many (one user to many notes)
     # constructor of a User object, initializes the instance variables within object (self)
@@ -26,18 +26,6 @@ class User(db.Model):
         self._role = role
         self._animal = animal
     # a name getter method, extracts name from object
-    @property
-    def role(self):
-        return self._role
-    @role.setter
-    def role(self, role):
-        self._role = role
-    @property
-    def animal(self):
-        return self._animal
-    @animal.setter
-    def animal(self, animal):
-        self._animal = animal
     @property
     def name(self):
         return self._name
@@ -68,6 +56,18 @@ class User(db.Model):
         """Check against hashed password."""
         result = check_password_hash(self._password, password)
         return result
+    @property
+    def role(self):
+        return self._role
+    @role.setter
+    def role(self, role):
+        self._role = role
+    @property
+    def animal(self):
+        return self._animal
+    @animal.setter
+    def animal(self, animal):
+        self._animal = animal
     # dob property is returned as string, to avoid unfriendly outcomes
     # output content using str(object) in human readable form, uses getter
     # output content using json dumps, this is ready for API response
@@ -125,10 +125,11 @@ def initUsers():
         """Tester data for table"""
         u1 = User(name='Thomas Edison', uid='toby', password='123toby', animal="tiger")
         u2 = User(name='Nicholas Tesla', uid='niko', password='123niko', animal="rabbit")
-        u3 = User(name='Alexander Graham Bell', uid='lex', animal="dog")
+        u3 = User(name='Alexander Graham Bell', uid='lex', animal="pig")
         u4 = User(name='Grace Hopper', uid='hop', password='123hop', animal="ox")
         u5 = User(name='Lindsay Tang', uid='lct', password='123lin', role="Admin")
-        users = [u1, u2, u3, u4, u5]
+        u6 = User(name='Ben Chin', uid='BenC', password='123ben', role="Admin", animal="dog")
+        users = [u1, u2, u3, u4, u5, u6]
         """Builds sample user/note(s) data"""
         for user in users:
             try:
