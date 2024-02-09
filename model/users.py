@@ -16,13 +16,15 @@ class User(db.Model):
     _uid = db.Column(db.String(255), unique=True, nullable=False)
     _password = db.Column(db.String(255), unique=False, nullable=False)
     _role = db.Column(db.String(255))
+    _animal = db.Column(db.String(255))
     # Defines a relationship between User record and Notes table, one-to-many (one user to many notes)
     # constructor of a User object, initializes the instance variables within object (self)
-    def __init__(self, name, uid, password="123qwerty", role="User"):
+    def __init__(self, name, uid, password="123qwerty", role="User", animal="cat"):
         self._name = name    # variables with self prefix become part of the object,
         self._uid = uid
         self.set_password(password)
         self._role = role
+        self._animal = animal
     # a name getter method, extracts name from object
     @property
     def role(self):
@@ -30,6 +32,12 @@ class User(db.Model):
     @role.setter
     def role(self, role):
         self._role = role
+    @property
+    def animal(self):
+        return self._animal
+    @animal.setter
+    def animal(self, animal):
+        self._animal = animal
     @property
     def name(self):
         return self._name
@@ -83,11 +91,12 @@ class User(db.Model):
             "id": self.id,
             "name": self.name,
             "uid": self.uid,
-            "role": self.role
+            "role": self.role,
+            "animal": self.animal
         }
     # CRUD update: updates user name, password, phone
     # returns self
-    def update(self, name="", uid="", password="", role="User"):
+    def update(self, name="", uid="", password="", role="User", animal=""):
         """only updates values with length"""
         if len(name) > 0:
             self.name = name
@@ -97,6 +106,8 @@ class User(db.Model):
             self.set_password(password)
         if len(role) > 0:
             self.role = role
+        if len(animal) > 0:
+            self.animal = animal
         db.session.commit()
         return self
     # CRUD delete: remove self
@@ -112,10 +123,10 @@ def initUsers():
         """Create database and tables"""
         db.create_all()
         """Tester data for table"""
-        u1 = User(name='Thomas Edison', uid='toby', password='123toby')
-        u2 = User(name='Nicholas Tesla', uid='niko', password='123niko')
-        u3 = User(name='Alexander Graham Bell', uid='lex')
-        u4 = User(name='Grace Hopper', uid='hop', password='123hop')
+        u1 = User(name='Thomas Edison', uid='toby', password='123toby', animal="tiger")
+        u2 = User(name='Nicholas Tesla', uid='niko', password='123niko', animal="rabbit")
+        u3 = User(name='Alexander Graham Bell', uid='lex', animal="dog")
+        u4 = User(name='Grace Hopper', uid='hop', password='123hop', animal="ox")
         u5 = User(name='Lindsay Tang', uid='lct', password='123lin', role="Admin")
         users = [u1, u2, u3, u4, u5]
         """Builds sample user/note(s) data"""
