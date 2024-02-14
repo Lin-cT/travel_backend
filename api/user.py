@@ -1,9 +1,9 @@
+from collections import UserString
 import json, jwt
 from flask import Flask, Blueprint, request, jsonify, current_app, Response, make_response
 from flask_restful import Api, Resource # used for REST API building
 from datetime import datetime
 from auth_middleware import token_required
-from model.itinerary import Itinerary
 from model.users import User
 
 user_api = Blueprint('user_api', __name__,
@@ -133,21 +133,20 @@ class UserAPI:
                 }, 500
     
     class _Itinerary(Resource):
-        def post(self):
-            data = request.get_json()
+        def put(self):
 
-            text = data.get('itinerary')
+            body = request.get_json()
+            uid = body.get('uid')
+            itinerary = body.get('itinerary')
 
-            if not text:
+            if not itinerary:
                 return {'message': 'Itinerary is missing.'}, 400
 
-            # Assuming you have a TextUpload model with a create method
-            upload = Itinerary.create(text)
-
-            if upload:
-                return jsonify({'message': 'Text uploaded successfully'}), 200
-            else:
-                return {'message': 'Error updating itinerary'}, 500
+            users = User.query.all()
+            for user in users:
+                if user.uid == uid:
+                    user.update('','','','', itinerary)
+            return f"{user.read()} Updated"
 
             
     # building RESTapi endpoint
