@@ -133,21 +133,40 @@ class UserAPI:
                 }, 500
     
     class _Itinerary(Resource):
+        #retrieving data for all users in database
+        def get(self):
+            texts = User.query.with_entities(User._itinerary).all()
+            jsonData = [row[0] for row in texts]
+            print(jsonData)
+            return jsonify(jsonData)
+                
+        #Itinerary api code
         def put(self):
-
             body = request.get_json()
-            uid = body.get('uid')
+            token = request.cookies.get("jwt")
+            data = jwt.decode(token, 
+                            current_app.config["SECRET_KEY"], 
+                            algorithms=["HS256"])
             itinerary = body.get('itinerary')
-
-            if not itinerary:
-                return {'message': 'Itinerary is missing.'}, 400
-
             users = User.query.all()
             for user in users:
-                if user.uid == uid:
-                    user.update('','','','', itinerary)
-            return f"{user.read()} Updated"
+                if user.uid == data["_uid"]:    
+                    print(data["_uid"])
+                    user.update("", "", "", "", itinerary)
+                    print(user._itinerary)
 
+        #Posting itinerary data
+        def post(self):
+            token = request.cookies.get("jwt")
+            data = jwt.decode(token, 
+                            current_app.config["SECRET_KEY"], 
+                            algorithms=["HS256"])
+            users = User.query.all()
+            for user in users:
+                if user.uid == data["_uid"]:    
+                    return user.itinerary
+
+            
             
     # building RESTapi endpoint
     api.add_resource(_CRUD, '/')
