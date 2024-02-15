@@ -135,8 +135,8 @@ class UserAPI:
     class _Itinerary(Resource):
         #retrieving data for all users in database
         def get(self):
-            texts = User.query.with_entities(User._itinerary).all()
-            jsonData = [row[0] for row in texts]
+            itinerary = User.query.with_entities(User._itinerary).all()
+            jsonData = [row[0] for row in itinerary]
             print(jsonData)
             return jsonify(jsonData)
                 
